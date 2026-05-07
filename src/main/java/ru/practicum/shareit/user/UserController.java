@@ -1,5 +1,6 @@
 package ru.practicum.shareit.user;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,17 +15,11 @@ import ru.practicum.shareit.validation.Update;
 
 import java.util.List;
 
-/**
- * TODO Sprint add-controllers.
- */
 @RestController
 @RequestMapping(path = "/users")
+@RequiredArgsConstructor
 public class UserController {
     private final UserService service;
-
-    public UserController(UserService service) {
-        this.service = service;
-    }
 
     @PostMapping
     public UserDto create(@Validated(Create.class) @RequestBody UserDto userDto) {

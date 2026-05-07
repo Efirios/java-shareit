@@ -1,5 +1,6 @@
 package ru.practicum.shareit.item;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.BadRequestException;
 import ru.practicum.shareit.exception.ForbiddenException;
@@ -8,18 +9,14 @@ import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
-
-    public ItemServiceImpl(ItemRepository itemRepository, UserRepository userRepository) {
-        this.itemRepository = itemRepository;
-        this.userRepository = userRepository;
-    }
 
     @Override
     public ItemDto create(long userId, ItemDto itemDto) {
@@ -30,7 +27,9 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto update(long userId, long itemId, ItemDto itemDto) {
+        userRepository.findById(userId);
         Item existing = itemRepository.findById(itemId);
+
         if (existing.getOwner() == null
                 || existing.getOwner().getId() == null
                 || existing.getOwner().getId() != userId) {
@@ -60,26 +59,26 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto getById(long userId, long itemId) {
+        userRepository.findById(userId);
         return ItemMapper.toDto(itemRepository.findById(itemId));
     }
 
     @Override
     public List<ItemDto> getByOwner(long userId) {
-        List<Item> items = itemRepository.findByOwnerId(userId);
-        List<ItemDto> result = new ArrayList<>();
-        for (Item item : items) {
-            result.add(ItemMapper.toDto(item));
-        }
-        return result;
+        userRepository.findById(userId);
+        return itemRepository.findByOwnerId(userId).stream()
+                .map(ItemMapper::toDto)
+                .collect(Collectors.toList());
     }
 
     @Override
     public List<ItemDto> search(long userId, String text) {
-        List<Item> items = itemRepository.searchAvailable(text);
-        List<ItemDto> result = new ArrayList<>();
-        for (Item item : items) {
-            result.add(ItemMapper.toDto(item));
+        userRepository.findById(userId);
+        if (text == null || text.isBlank()) {
+            return List.of();
         }
-        return result;
+        return itemRepository.searchAvailable(text).stream()
+                .map(ItemMapper::toDto)
+                .collect(Collectors.toList());
     }
 }

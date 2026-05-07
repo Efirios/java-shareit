@@ -1,15 +1,15 @@
 package ru.practicum.shareit.item;
 
-import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Component;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.model.Item;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-@Repository
+@Component
 public class InMemoryItemRepository implements ItemRepository {
     private final Map<Long, Item> items = new HashMap<>();
     private long nextId = 1;
@@ -34,33 +34,23 @@ public class InMemoryItemRepository implements ItemRepository {
 
     @Override
     public List<Item> findByOwnerId(long ownerId) {
-        List<Item> result = new ArrayList<>();
-        for (Item item : items.values()) {
-            if (item.getOwner() != null
-                    && item.getOwner().getId() != null
-                    && item.getOwner().getId() == ownerId) {
-                result.add(item);
-            }
-        }
-        return result;
+        return items.values().stream()
+                .filter(item -> item.getOwner() != null
+                        && item.getOwner().getId() != null
+                        && item.getOwner().getId() == ownerId)
+                .collect(Collectors.toList());
     }
 
     @Override
     public List<Item> searchAvailable(String text) {
-        if (text == null || text.isBlank()) {
-            return List.of();
-        }
         String q = text.toLowerCase();
-        List<Item> result = new ArrayList<>();
-        for (Item item : items.values()) {
-            if (Boolean.TRUE.equals(item.getAvailable())) {
-                String name = item.getName() == null ? "" : item.getName().toLowerCase();
-                String description = item.getDescription() == null ? "" : item.getDescription().toLowerCase();
-                if (name.contains(q) || description.contains(q)) {
-                    result.add(item);
-                }
-            }
-        }
-        return result;
+        return items.values().stream()
+                .filter(item -> Boolean.TRUE.equals(item.getAvailable()))
+                .filter(item -> {
+                    String name = item.getName() == null ? "" : item.getName().toLowerCase();
+                    String description = item.getDescription() == null ? "" : item.getDescription().toLowerCase();
+                    return name.contains(q) || description.contains(q);
+                })
+                .collect(Collectors.toList());
     }
 }

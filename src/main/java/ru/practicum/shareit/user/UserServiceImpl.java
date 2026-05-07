@@ -1,21 +1,23 @@
 package ru.practicum.shareit.user;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.BadRequestException;
+import ru.practicum.shareit.exception.ConflictException;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserRepository repository;
 
-    public UserServiceImpl(UserRepository repository) {
-        this.repository = repository;
-    }
-
     @Override
     public UserDto create(UserDto userDto) {
+        if (userDto.getEmail() != null) {
+            checkEmailUnique(null, userDto.getEmail());
+        }
         User user = UserMapper.toUser(userDto);
         return UserMapper.toDto(repository.save(user));
     }
@@ -35,6 +37,7 @@ public class UserServiceImpl implements UserService {
             if (userDto.getEmail().isBlank()) {
                 throw new BadRequestException("Email is blank");
             }
+            checkEmailUnique(userId, userDto.getEmail());
             existing.setEmail(userDto.getEmail());
         }
 
@@ -48,16 +51,24 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserDto> getAll() {
-        List<User> users = repository.findAll();
-        List<UserDto> result = new ArrayList<>();
-        for (User user : users) {
-            result.add(UserMapper.toDto(user));
-        }
-        return result;
+        return repository.findAll().stream()
+                .map(UserMapper::toDto)
+                .collect(Collectors.toList());
     }
 
     @Override
     public void delete(long userId) {
+        repository.findById(userId);
         repository.deleteById(userId);
+    }
+
+    private void checkEmailUnique(Long userId, String email) {
+        boolean exists = repository.findAll().stream()
+                .anyMatch(user -> user.getEmail() != null
+                        && user.getEmail().equals(email)
+                        && (userId == null || !user.getId().equals(userId)));
+        if (exists) {
+            throw new ConflictException("Email already exists");
+        }
     }
 }

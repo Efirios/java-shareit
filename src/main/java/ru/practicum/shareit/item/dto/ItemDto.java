@@ -5,9 +5,6 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import ru.practicum.shareit.validation.Create;
 
-/**
- * TODO Sprint add-controllers.
- */
 @Data
 public class ItemDto {
     private Long id;

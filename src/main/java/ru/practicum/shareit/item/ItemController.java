@@ -1,5 +1,6 @@
 package ru.practicum.shareit.item;
 
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.validation.Create;
 
 import java.util.List;
 
@@ -27,7 +29,7 @@ public class ItemController {
 
     @PostMapping
     public ItemDto create(@RequestHeader("X-Sharer-User-Id") long userId,
-                          @RequestBody ItemDto itemDto) {
+                          @Validated(Create.class) @RequestBody ItemDto itemDto) {
         return service.create(userId, itemDto);
     }
 

@@ -1,6 +1,8 @@
 package ru.practicum.shareit.user;
 
 import org.springframework.stereotype.Repository;
+import ru.practicum.shareit.exception.ConflictException;
+import ru.practicum.shareit.exception.NotFoundException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,7 +21,7 @@ public class InMemoryUserRepository implements UserRepository {
                 if (existing.getEmail() != null
                         && existing.getEmail().equals(user.getEmail())
                         && (user.getId() == null || !existing.getId().equals(user.getId()))) {
-                    throw new IllegalArgumentException("Email already exists");
+                    throw new ConflictException("Email already exists");
                 }
             }
         }
@@ -27,6 +29,7 @@ public class InMemoryUserRepository implements UserRepository {
         if (user.getId() == null) {
             user.setId(nextId++);
         }
+
         users.put(user.getId(), user);
         return user;
     }
@@ -35,7 +38,7 @@ public class InMemoryUserRepository implements UserRepository {
     public User findById(long userId) {
         User user = users.get(userId);
         if (user == null) {
-            throw new IllegalArgumentException("User not found");
+            throw new NotFoundException("User not found");
         }
         return user;
     }

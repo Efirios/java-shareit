@@ -1,6 +1,8 @@
 package ru.practicum.shareit.item;
 
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.exception.BadRequestException;
+import ru.practicum.shareit.exception.ForbiddenException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.User;
@@ -32,17 +34,27 @@ public class ItemServiceImpl implements ItemService {
         if (existing.getOwner() == null
                 || existing.getOwner().getId() == null
                 || existing.getOwner().getId() != userId) {
-            throw new IllegalArgumentException("Only owner can update item");
+            throw new ForbiddenException("Only owner can update item");
         }
+
         if (itemDto.getName() != null) {
+            if (itemDto.getName().isBlank()) {
+                throw new BadRequestException("Name is blank");
+            }
             existing.setName(itemDto.getName());
         }
+
         if (itemDto.getDescription() != null) {
+            if (itemDto.getDescription().isBlank()) {
+                throw new BadRequestException("Description is blank");
+            }
             existing.setDescription(itemDto.getDescription());
         }
+
         if (itemDto.getAvailable() != null) {
             existing.setAvailable(itemDto.getAvailable());
         }
+
         return ItemMapper.toDto(itemRepository.save(existing));
     }
 

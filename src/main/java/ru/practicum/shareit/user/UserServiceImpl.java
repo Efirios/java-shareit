@@ -1,6 +1,7 @@
 package ru.practicum.shareit.user;
 
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.exception.BadRequestException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,12 +23,21 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto update(long userId, UserDto userDto) {
         User existing = repository.findById(userId);
+
         if (userDto.getName() != null) {
+            if (userDto.getName().isBlank()) {
+                throw new BadRequestException("Name is blank");
+            }
             existing.setName(userDto.getName());
         }
+
         if (userDto.getEmail() != null) {
+            if (userDto.getEmail().isBlank()) {
+                throw new BadRequestException("Email is blank");
+            }
             existing.setEmail(userDto.getEmail());
         }
+
         return UserMapper.toDto(repository.save(existing));
     }
 

@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import ru.practicum.shareit.validation.Create;
 
+import java.util.List;
+
 @Data
 public class ItemDto {
     private Long id;
@@ -19,4 +21,8 @@ public class ItemDto {
     private Boolean available;
 
     private Long requestId;
+
+    private BookingShortDto lastBooking;
+    private BookingShortDto nextBooking;
+    private List<CommentDto> comments;
 }

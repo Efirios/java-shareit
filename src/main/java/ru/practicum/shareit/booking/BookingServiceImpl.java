@@ -46,38 +46,17 @@ public class BookingServiceImpl implements BookingService {
             throw new BadRequestException("Owner can't book own item");
         }
 
-        if (bookingCreateDto.getStart() == null || bookingCreateDto.getEnd() == null) {
-            throw new BadRequestException("Start or end is null");
-        }
-
-        if (!bookingCreateDto.getEnd().isAfter(bookingCreateDto.getStart())) {
-            throw new BadRequestException("End must be after start");
-        }
-
-        if (!bookingCreateDto.getStart().isAfter(LocalDateTime.now())) {
-            throw new BadRequestException("Start must be in future");
-        }
-
-        Booking booking = new Booking();
-        booking.setStart(bookingCreateDto.getStart());
-        booking.setEnd(bookingCreateDto.getEnd());
-        booking.setItem(item);
-        booking.setBooker(booker);
-        booking.setStatus(BookingStatus.WAITING);
-
-        return BookingMapper.toDto(bookingRepository.save(booking));
+        return BookingMapper.toDto(bookingRepository.save(BookingMapper.toBooking(bookingCreateDto, item, booker)));
     }
 
     @Override
     @Transactional
     public BookingDto approve(long userId, long bookingId, boolean approved) {
-        Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new NotFoundException("Booking not found"));
-
-        if (booking.getItem() == null
-                || booking.getItem().getOwner() == null
-                || booking.getItem().getOwner().getId() == null
-                || booking.getItem().getOwner().getId() != userId) {
+        Booking booking = bookingRepository.findByIdAndItem_Owner_Id(bookingId, userId).orElse(null);
+        if (booking == null) {
+            if (!bookingRepository.existsById(bookingId)) {
+                throw new NotFoundException("Booking not found");
+            }
             throw new ForbiddenException("Only owner can approve booking");
         }
 

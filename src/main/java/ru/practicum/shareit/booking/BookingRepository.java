@@ -2,9 +2,13 @@ package ru.practicum.shareit.booking;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import ru.practicum.shareit.item.model.Item;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 public interface BookingRepository extends JpaRepository<Booking, Long> {
@@ -34,4 +38,18 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     Optional<Booking> findFirstByItem_IdAndStatusAndStartIsAfterOrderByStartAsc(Long itemId, BookingStatus status, LocalDateTime now);
 
     boolean existsByItem_IdAndBooker_IdAndStatusAndEndIsBefore(Long itemId, Long bookerId, BookingStatus status, LocalDateTime end);
+
+    @Query("select b " +
+            "from Booking b " +
+            "join fetch b.item i " +
+            "join fetch b.booker " +
+            "where b.id = ?1 and i.owner.id = ?2")
+    Optional<Booking> findByIdAndItem_Owner_Id(Long bookingId, Long ownerId);
+
+    @Query("select b " +
+            "from Booking b " +
+            "join fetch b.item i " +
+            "join fetch b.booker " +
+            "where i in ?1 and b.status = ?2")
+    List<Booking> findByItemInAndStatusWithBooker(List<Item> items, BookingStatus status, Sort sort);
 }

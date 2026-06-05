@@ -10,12 +10,7 @@ import java.util.List;
 @Data
 public class ItemRequestDto {
     private Long id;
-
-    @NotBlank
-    @Size(max = 2000)
     private String description;
-
     private LocalDateTime created;
-
     private List<ItemRequestItemDto> items;
 }

@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.shareit.validation.Create;
-import ru.practicum.shareit.validation.Update;
 
 import java.util.List;
 
@@ -28,7 +27,7 @@ public class UserController {
 
     @PatchMapping("/{userId}")
     public UserDto update(@PathVariable long userId,
-                          @Validated(Update.class) @RequestBody UserDto userDto) {
+                          @RequestBody UserDto userDto) {
         return service.update(userId, userDto);
     }
 
